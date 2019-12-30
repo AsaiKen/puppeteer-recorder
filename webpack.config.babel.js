@@ -59,13 +59,16 @@ const base = {
     ]
   },
   plugins: [
+    // toはoutput基準で指定
     new CopyPlugin([
       { from: './src/manifest.json', to: './manifest.json' },
       { from: './src/images', to: 'images' }
     ]),
+    // index.html
     new HtmlWebpackPlugin({
       template: './src/popup/template.html',
       chunks: ['popup']}),
+    // options.html
     new HtmlWebpackPlugin({
       template: './src/options/template.html',
       chunks: ['options'],
@@ -73,6 +76,7 @@ const base = {
 
     }),
     new VueLoaderPlugin(),
+    // モジュールに変数を注入
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(NODE_ENV)
@@ -90,6 +94,7 @@ const development = {
   },
   plugins: [
     ...base.plugins,
+    // 再描画無しで更新を反映する
     new webpack.HotModuleReplacementPlugin()
   ]
 }
