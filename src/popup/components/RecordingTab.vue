@@ -43,8 +43,8 @@
   }
 </script>
 <style lang="scss" scoped>
-  @import "~styles/_animations.scss";
-  @import "~styles/_variables.scss";
+  @import "../../styles/_animations.scss";
+  @import "../../styles/_variables.scss";
 
 
   .recording-tab {

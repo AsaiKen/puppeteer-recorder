@@ -228,6 +228,7 @@ class RecordingController {
   }
 
   injectScript () {
+    // アクティブタブにコンテントスクリプトを注入
     chrome.tabs.executeScript({ file: 'content-script.js', allFrames: true })
   }
 }

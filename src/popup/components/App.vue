@@ -1,5 +1,6 @@
 <template>
   <div id="puppeteer-recorder" class="recorder">
+    <!-- ヘッダ -->
     <div class="header">
       <a href="#" @click="goHome">
         Puppeteer recorder <span class="text-muted"><small>{{version}}</small></span>
@@ -17,8 +18,10 @@
         </a>
       </div>
     </div>
+    <!-- ボディ -->
     <div class="main">
       <div class="tabs" v-show="!showHelp">
+        <!-- 記録したイベントの一覧 -->
         <RecordingTab :code="code" :is-recording="isRecording" :live-events="liveEvents" v-show="!showResultsTab"/>
         <div class="recording-footer" v-show="!showResultsTab">
           <button class="btn btn-sm" @click="toggleRecord" :class="isRecording ? 'btn-danger' : 'btn-primary'">
@@ -29,6 +32,7 @@
           </button>
           <a href="#" @click="showResultsTab = true" v-show="code">view code</a>
         </div>
+        <!-- puppeteerのコード -->
         <ResultsTab :code="code" :copy-link-text="copyLinkText" :restart="restart" :set-copying="setCopying" v-show="showResultsTab"/>
         <div class="results-footer" v-show="showResultsTab">
           <button class="btn btn-sm btn-primary" @click="restart" v-show="code">Restart</button>
@@ -43,6 +47,7 @@
 <script>
   import { version } from '../../../package.json'
   import CodeGenerator from '../../code-generator/CodeGenerator'
+  // Vueコンポネント
   import RecordingTab from './RecordingTab.vue'
   import ResultsTab from './ResultsTab.vue'
   import HelpTab from './HelpTab.vue'
@@ -213,9 +218,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "~styles/_animations.scss";
-  @import "~styles/_variables.scss";
-  @import "~styles/_mixins.scss";
+  @import "../../styles/_animations.scss";
+  @import "../../styles/_variables.scss";
+  @import "../../styles/_mixins.scss";
 
   .recorder {
     font-size: 14px;

@@ -42,9 +42,9 @@ node my-script.js</pre>
   }
 </script>
 <style lang="scss" scoped>
-  @import "~styles/_variables.scss";
-  @import "~styles/_mixins.scss";
-  @import "~styles/_utils.scss";
+  @import "../../styles/_variables.scss";
+  @import "../../styles/_mixins.scss";
+  @import "../../styles/_utils.scss";
 
 
   .help-tab {

@@ -11,6 +11,7 @@ const base = {
   context: __dirname,
   entry: {
     background: './src/background/index.js',
+    // content-script.jsになる
     'content-script': './src/content-scripts/index.js',
     popup: './src/popup/index.js',
     options: './src/options/index.js'

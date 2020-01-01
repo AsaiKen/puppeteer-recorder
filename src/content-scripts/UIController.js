@@ -44,7 +44,9 @@ class UIController extends EventEmitter {
     }
     if (!this._overlay.parentNode) {
       document.body.appendChild(this._overlay)
+      // 1.要素を選ぶ
       document.body.addEventListener('mousemove', this._boundeMouseMove, false)
+      // 2.要素を決定
       document.body.addEventListener('click', this._boundeMouseUp, false)
     }
   }
@@ -62,20 +64,19 @@ class UIController extends EventEmitter {
     if (this._element !== e.target) {
       this._element = e.target
 
-      this._dimensions.top = -window.scrollY
-      this._dimensions.left = -window.scrollX
-
-      let elem = e.target
-
-      while (elem && elem !== document.body) {
-        this._dimensions.top += elem.offsetTop
-        this._dimensions.left += elem.offsetLeft
-        elem = elem.offsetParent
-      }
-      this._dimensions.width = this._element.offsetWidth
-      this._dimensions.height = this._element.offsetHeight
-
+      // this._elementの範囲を取得（ビューポート内の相対座標）しておく
       if (this._selector) {
+        let elem = e.target
+        while (elem && elem !== document.body) {
+          this._dimensions.top += elem.offsetTop
+          this._dimensions.left += elem.offsetLeft
+          elem = elem.offsetParent
+        }
+        this._dimensions.top = -window.scrollY
+        this._dimensions.left = -window.scrollX
+        this._dimensions.width = this._element.offsetWidth
+        this._dimensions.height = this._element.offsetHeight
+
         this._selector.style.top = (this._dimensions.top - BORDER_THICKNESS) + 'px'
         this._selector.style.left = (this._dimensions.left - BORDER_THICKNESS) + 'px'
         this._selector.style.width = this._dimensions.width + 'px'
@@ -85,6 +86,7 @@ class UIController extends EventEmitter {
     }
   }
   _mouseup (e) {
+    // 範囲を取ったという演出を入れる
     this._overlay.style.backgroundColor = 'white'
     setTimeout(() => {
       this._overlay.style.backgroundColor = 'none'
@@ -107,7 +109,7 @@ class UIController extends EventEmitter {
 
   _cleanup () {
     document.body.removeEventListener('mousemove', this._boundeMouseMove, false)
-    document.body.removeEventListener('mouseup', this._boundeMouseUp, false)
+    document.body.removeEventListener('click', this._boundeMouseUp, false)
     document.body.removeChild(this._overlay)
   }
 }

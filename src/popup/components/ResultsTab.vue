@@ -19,7 +19,7 @@
   }
 </script>
 <style lang="scss" scoped>
-  @import "~styles/_variables.scss";
+  @import "../../styles/_variables.scss";
 
   .results-tab {
     .content {
