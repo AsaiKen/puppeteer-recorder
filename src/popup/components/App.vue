@@ -1,9 +1,8 @@
 <template>
-  <div id="puppeteer-recorder" class="recorder">
-    <!-- ヘッダ -->
+  <div id="headless-recorder" class="recorder">
     <div class="header">
       <a href="#" @click="goHome">
-        Puppeteer recorder <span class="text-muted"><small>{{version}}</small></span>
+        Headless recorder <span class="text-muted"><small>{{version}}</small></span>
       </a>
       <div class="left">
         <div class="recording-badge" v-show="isRecording">
@@ -18,10 +17,8 @@
         </a>
       </div>
     </div>
-    <!-- ボディ -->
     <div class="main">
       <div class="tabs" v-show="!showHelp">
-        <!-- 記録したイベントの一覧 -->
         <RecordingTab :code="code" :is-recording="isRecording" :live-events="liveEvents" v-show="!showResultsTab"/>
         <div class="recording-footer" v-show="!showResultsTab">
           <button class="btn btn-sm" @click="toggleRecord" :class="isRecording ? 'btn-danger' : 'btn-primary'">
@@ -31,12 +28,12 @@
             {{pauseButtonText}}
           </button>
           <a href="#" @click="showResultsTab = true" v-show="code">view code</a>
+          <checkly-badge v-if="!isRecording"></checkly-badge>
         </div>
-        <!-- puppeteerのコード -->
-        <ResultsTab :code="code" :copy-link-text="copyLinkText" :restart="restart" :set-copying="setCopying" v-show="showResultsTab"/>
+        <ResultsTab :puppeteer="code" :playwright="codeForPlaywright" :options="options" v-if="showResultsTab" v-on:update:tab="currentResultTab = $event" />
         <div class="results-footer" v-show="showResultsTab">
           <button class="btn btn-sm btn-primary" @click="restart" v-show="code">Restart</button>
-          <a href="#" v-clipboard:copy='code' @click="setCopying" v-show="code">{{copyLinkText}}</a>
+          <a href="#" v-clipboard:copy="getCodeForCopy()" @click.prevent="setCopying" v-show="code">{{copyLinkText}}</a>
         </div>
       </div>
       <HelpTab v-show="showHelp"></HelpTab>
@@ -46,20 +43,22 @@
 
 <script>
   import { version } from '../../../package.json'
-  import CodeGenerator from '../../code-generator/CodeGenerator'
-  // Vueコンポネント
+  import PuppeteerCodeGenerator from '../../code-generator/PuppeteerCodeGenerator'
+  import PlaywrightCodeGenerator from '../../code-generator/PlaywrightCodeGenerator'
   import RecordingTab from './RecordingTab.vue'
   import ResultsTab from './ResultsTab.vue'
   import HelpTab from './HelpTab.vue'
+  import ChecklyBadge from './ChecklyBadge.vue'
 
   import actions from '../../models/extension-ui-actions'
 
 export default {
     name: 'App',
-    components: { ResultsTab, RecordingTab, HelpTab },
+    components: { ResultsTab, RecordingTab, HelpTab, ChecklyBadge },
     data () {
       return {
         code: '',
+        codeForPlaywright: '',
         options: {},
         showResultsTab: false,
         showHelp: false,
@@ -69,7 +68,8 @@ export default {
         isPaused: false,
         isCopying: false,
         bus: null,
-        version
+        version,
+        currentResultTab: null
       }
     },
     mounted () {
@@ -127,8 +127,10 @@ export default {
           this.recording = recording
           const codeOptions = options ? options.code : {}
 
-          const codeGen = new CodeGenerator(codeOptions)
+          const codeGen = new PuppeteerCodeGenerator(codeOptions)
+          const codeGenPlaywright = new PlaywrightCodeGenerator(codeOptions)
           this.code = codeGen.generate(this.recording)
+          this.codeForPlaywright = codeGenPlaywright.generate(this.recording)
           this.showResultsTab = true
           this.storeState()
         })
@@ -141,6 +143,7 @@ export default {
       cleanUp () {
         this.recording = this.liveEvents = []
         this.code = ''
+        this.codeForPlaywright = ''
         this.showResultsTab = this.isRecording = this.isPaused = false
         this.storeState()
       },
@@ -151,7 +154,7 @@ export default {
         }
       },
       loadState (cb) {
-        this.$chrome.storage.local.get(['controls', 'code', 'options'], ({ controls, code, options }) => {
+        this.$chrome.storage.local.get(['controls', 'code', 'options', 'codeForPlaywright'], ({ controls, code, options, codeForPlaywright }) => {
           if (controls) {
             this.isRecording = controls.isRecording
             this.isPaused = controls.isPaused
@@ -159,6 +162,10 @@ export default {
 
           if (code) {
             this.code = code
+          }
+
+          if (codeForPlaywright) {
+            this.codeForPlaywright = codeForPlaywright
           }
 
           if (options) {
@@ -170,6 +177,7 @@ export default {
       storeState () {
         this.$chrome.storage.local.set({
           code: this.code,
+          codeForPlaywright: this.codeForPlaywright,
           controls: {
             isRecording: this.isRecording,
             isPaused: this.isPaused
@@ -198,6 +206,9 @@ export default {
         if (this.options && this.options.extension && this.options.extension.telemetry) {
           if (window._gaq) window._gaq.push(['_trackPageview'])
         }
+      },
+      getCodeForCopy () {
+        return this.currentResultTab === 'puppeteer' ? this.code : this.codeForPlaywright
       }
     },
     computed: {
@@ -218,10 +229,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../styles/_animations.scss";
-  @import "../../styles/_variables.scss";
-  @import "../../styles/_mixins.scss";
-
+  @import "~styles/_animations.scss";
+  @import "~styles/_variables.scss";
+  @import "~styles/_mixins.scss";
   .recorder {
     font-size: 14px;
 
@@ -262,7 +272,12 @@ export default {
     }
 
     .recording-footer {
-      @include footer()
+      @include footer();
+      img {
+        margin-left: 8px;
+        width: 80px;
+        vertical-align: middle;
+      }
     }
     .results-footer {
       @include footer()
