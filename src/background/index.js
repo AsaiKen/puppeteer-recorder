@@ -26,9 +26,11 @@ class RecordingController {
   }
 
   boot () {
+    // 長期通信に使うchrome.extension.connect()の対
     chrome.extension.onConnect.addListener(port => {
       console.debug('listeners connected')
       port.onMessage.addListener(msg => {
+        // popupからメッセージが来た場合
         if (msg.action && msg.action === actions.START) this.start()
         if (msg.action && msg.action === actions.STOP) this.stop()
         if (msg.action && msg.action === actions.CLEAN_UP) this.cleanUp()
@@ -102,6 +104,7 @@ class RecordingController {
     console.debug('stop recording')
     this._badgeState = this._recording.length > 0 ? '1' : ''
 
+    // ハンドラを消す
     chrome.runtime.onMessage.removeListener(this._boundedMessageHandler)
     chrome.webNavigation.onCompleted.removeListener(this._boundedNavigationHandler)
     chrome.webNavigation.onBeforeNavigate.removeListener(this._boundedWaitHandler)
@@ -111,6 +114,7 @@ class RecordingController {
     chrome.browserAction.setBadgeText({text: this._badgeState})
     chrome.browserAction.setBadgeBackgroundColor({color: '#45C8F1'})
 
+    // 操作をlocalstorageに保存
     chrome.storage.local.set({ recording: this._recording }, () => {
       console.debug('recording stored')
     })
@@ -134,6 +138,8 @@ class RecordingController {
     console.debug('cleanup')
     this._recording = []
     chrome.browserAction.setBadgeText({ text: '' })
+    // Storageはオリジン単位で分離される
+    // 操作リストを消去
     chrome.storage.local.remove('recording', () => {
       console.debug('stored recording cleared')
       if (cb) cb()
@@ -143,6 +149,8 @@ class RecordingController {
   recordCurrentUrl (href) {
     if (!this._hasGoto) {
       console.debug('recording goto* for:', href)
+      // 1操作として扱う
+      // frame.goto用
       this.handleMessage({selector: undefined, value: undefined, action: pptrActions.GOTO, href})
       this._hasGoto = true
     }
@@ -150,19 +158,27 @@ class RecordingController {
 
   recordCurrentViewportSize (value) {
     if (!this._hasViewPort) {
+      // 1操作として扱う
+      // frame.setViewport用
       this.handleMessage({selector: undefined, value, action: pptrActions.VIEWPORT})
       this._hasViewPort = true
     }
   }
 
   recordNavigation () {
+    // 1操作として扱う
+    // frame.waitForNavigation用
     this.handleMessage({ selector: undefined, value: undefined, action: pptrActions.NAVIGATION })
   }
 
   recordScreenshot (value) {
+    // 1操作として扱う
+    // frame.screenshot用
     this.handleMessage({ selector: undefined, value, action: pptrActions.SCREENSHOT })
   }
 
+  // chrome.runtime.onMessage
+  // content-scriptからメッセージが来た場合
   handleMessage (msg, sender) {
     if (msg.control) return this.handleControlMessage(msg, sender)
 
@@ -171,6 +187,7 @@ class RecordingController {
     msg.frameUrl = sender ? sender.url : null
 
     if (!this._isPaused) {
+      // this._recordingに操作を貯める
       this._recording.push(msg)
       chrome.storage.local.set({ recording: this._recording }, () => {
         console.debug('stored recording updated')
@@ -185,14 +202,17 @@ class RecordingController {
     if (msg.control === ctrl.GET_SCREENSHOT) this.recordScreenshot(msg.value)
   }
 
+  // chrome.webNavigation.onCompleted
   handleNavigation ({ frameId }) {
     console.debug('frameId is:', frameId)
     this.injectScript()
     if (frameId === 0) {
+      // メインフレームの場合
       this.recordNavigation()
     }
   }
 
+  // chrome.contextMenus.onClicked
   handleMenuInteraction (info, tab) {
     console.debug('context menu clicked')
     switch (info.menuItemId) {
@@ -205,6 +225,7 @@ class RecordingController {
     }
   }
 
+  // chrome.commands.onCommand
   handleKeyCommands (command) {
     switch (command) {
       case actions.TOGGLE_SCREENSHOT_MODE:
@@ -223,6 +244,7 @@ class RecordingController {
     })
   }
 
+  // chrome.webNavigation.onBeforeNavigate
   handleWait () {
     chrome.browserAction.setBadgeText({ text: 'wait' })
   }

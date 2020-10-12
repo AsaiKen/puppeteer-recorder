@@ -52,8 +52,9 @@
 
   import actions from '../../models/extension-ui-actions'
 
-export default {
+  export default {
     name: 'App',
+    // 使うコンポネントをセット
     components: { ResultsTab, RecordingTab, HelpTab, ChecklyBadge },
     data () {
       return {
@@ -87,6 +88,7 @@ export default {
           this.showResultsTab = true
         }
       })
+      // backgroundとの間にportを作成
       this.bus = this.$chrome.extension.connect({ name: 'recordControls' })
     },
     methods: {
@@ -211,6 +213,7 @@ export default {
         return this.currentResultTab === 'puppeteer' ? this.code : this.codeForPlaywright
       }
     },
+    // 変更があれば自動更新される
     computed: {
       recordingBadgeText () {
         return this.isPaused ? 'paused' : 'recording'
@@ -229,9 +232,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "~styles/_animations.scss";
-  @import "~styles/_variables.scss";
-  @import "~styles/_mixins.scss";
+  @import "../../styles/_animations.scss";
+  @import "../../styles/_variables.scss";
+  @import "../../styles/_mixins.scss";
   .recorder {
     font-size: 14px;
 

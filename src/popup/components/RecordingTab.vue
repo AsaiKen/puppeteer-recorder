@@ -26,9 +26,11 @@
     </div>
   </div>
 </template>
+
 <script>
   export default {
     name: 'RecordingTab',
+    // 親からv-bind:で受け取るパラメータ
     props: {
       isRecording: { type: Boolean, default: false },
       liveEvents: { type: Array, default: () => { return [] } }
@@ -42,6 +44,7 @@
     }
   }
 </script>
+
 <style lang="scss" scoped>
   @import "../../styles/_animations.scss";
   @import "../../styles/_variables.scss";

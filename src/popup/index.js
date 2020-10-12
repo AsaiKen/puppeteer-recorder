@@ -21,9 +21,11 @@ window._gaq = window._gaq || []
 window._gaq.push(['_setAccount', 'UA-110523681-4'])
 
 Vue.config.productionTip = false
+// Vueプラグインをロード
 Vue.use(VueHighlightJS)
 Vue.use(VueClipboard)
 
+// this.$chromeで使えるようになる
 Vue.prototype.$chrome = chrome
 
 /* eslint-disable no-new */

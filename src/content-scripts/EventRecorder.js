@@ -6,6 +6,7 @@ import finder from '@medv/finder'
 
 const DEFAULT_MOUSE_CURSOR = 'default'
 
+// defaultのexportとして登録
 export default class EventRecorder {
   constructor () {
     this._boundedMessageListener = null
@@ -48,12 +49,16 @@ export default class EventRecorder {
 
     if (this._isTopFrame) {
       this._sendMessage({ control: ctrl.EVENT_RECORDER_STARTED })
+      // frame.goto
       this._sendMessage({ control: ctrl.GET_CURRENT_URL, href: window.location.href })
+      // frame.setViewport
       this._sendMessage({ control: ctrl.GET_VIEWPORT_SIZE, coordinates: { width: window.innerWidth, height: window.innerHeight } })
       console.debug('Puppeteer Recorder in-page EventRecorder started')
     }
   }
 
+  // chrome.runtime.onMessage
+  // backgroundからメッセージが来た場合
   _handleBackgroundMessage (msg, sender, sendResponse) {
     console.debug('content-script: message from background', msg)
     if (msg && msg.action) {
@@ -84,8 +89,10 @@ export default class EventRecorder {
       // poor man's way of detecting whether this script was injected by an actual extension, or is loaded for
       // testing purposes
       if (chrome.runtime && chrome.runtime.onMessage) {
+        // backgroundにメッセージを送信
         chrome.runtime.sendMessage(msg)
       } else {
+        // デバッグ時は貯めるだけ
         this._eventLog.push(msg)
       }
     } catch (err) {
@@ -93,6 +100,7 @@ export default class EventRecorder {
     }
   }
 
+  // 各種eventのハンドラ
   _recordEvent (e) {
     if (this._previousEvent && this._previousEvent.timeStamp === e.timeStamp) return
     this._previousEvent = e
@@ -140,9 +148,11 @@ export default class EventRecorder {
       this._uiController.hideSelector()
     }
 
+    // viewport内の座標を受け取る
     this._uiController.on('click', event => {
       this._screenShotMode = false
       document.body.style.cursor = DEFAULT_MOUSE_CURSOR
+      // frame.screenshot
       this._sendMessage({ control: ctrl.GET_SCREENSHOT, value: event.clip })
       this._enableClickRecording()
     })

@@ -28,11 +28,11 @@ export default {
   name: 'ResultsTab',
   props: {
     puppeteer: {
-      type: String, 
+      type: String,
       default: ''
     },
     playwright: {
-      type: String, 
+      type: String,
       default: ''
     },
     options: {
@@ -46,7 +46,7 @@ export default {
       tabs: [TYPE.PUPPETEER, TYPE.PLAYWRIGHT]
     }
   },
-  mounted() {
+  mounted () {
     if (this.options && this.options.code && this.options.code.showPlaywrightFirst) {
       this.activeTab = TYPE.PLAYWRIGHT
       this.tabs = this.tabs.reverse()
@@ -54,15 +54,15 @@ export default {
     this.$emit('update:tab', this.activeTab)
   },
   methods: {
-    code() {
+    code () {
       return this.activeTab === TYPE.PUPPETEER ? this.puppeteer : this.playwright
     },
-    changeTab(tab) {
+    changeTab (tab) {
       this.activeTab = tab
       this.$emit('update:tab', tab)
     }
   }
-  }
+}
 </script>
 <style lang="scss" scoped>
   @import "../../styles/_variables.scss";

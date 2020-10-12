@@ -36,11 +36,13 @@ node my-script.js</pre>
     </div>
   </div>
 </template>
+
 <script>
   export default {
     name: 'HelpTab'
   }
 </script>
+
 <style lang="scss" scoped>
   @import "../../styles/_variables.scss";
   @import "../../styles/_mixins.scss";
