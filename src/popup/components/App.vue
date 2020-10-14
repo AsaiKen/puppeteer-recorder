@@ -88,7 +88,7 @@
           this.showResultsTab = true
         }
       })
-      // backgroundとの間にportを作成
+      // popupする度に、backgroundとの間にportを作成
       this.bus = this.$chrome.extension.connect({ name: 'recordControls' })
     },
     methods: {
