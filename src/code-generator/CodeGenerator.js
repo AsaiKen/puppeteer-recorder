@@ -9,7 +9,8 @@ export const defaults = {
   waitForSelectorOnClick: true,
   blankLinesBetweenBlocks: true,
   dataAttribute: '',
-  showPlaywrightFirst: false
+  showPlaywrightFirst: false,
+  keyCode: 9
 }
 
 export default class CodeGenerator {
@@ -53,7 +54,7 @@ export default class CodeGenerator {
 
       switch (action) {
         case 'keydown':
-          if (keyCode === 9) { // tab key
+          if (keyCode === this._options.keyCode) {
             this._blocks.push(this._handleKeyDown(selector, value, keyCode))
           }
           break
@@ -127,7 +128,7 @@ export default class CodeGenerator {
 
   _handleKeyDown (selector, value) {
     const block = new Block(this._frameId)
-    block.addLine({ type: domEvents.KEYDOWN, value: `await ${this._frame}.type('${selector}', '${value}')` })
+    block.addLine({ type: domEvents.KEYDOWN, value: `await ${this._frame}.type('${selector}', '${this._escapeUserInput(value)}')` })
     return block
   }
 
@@ -205,5 +206,9 @@ export default class CodeGenerator {
       this._blocks.splice(i, 0, blankLine)
       i += 2
     }
+  }
+
+  _escapeUserInput (value) {
+    return value.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')
   }
 }
